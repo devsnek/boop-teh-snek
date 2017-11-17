@@ -3,7 +3,7 @@ const EventEmitter = require('events');
 const OPCodes = {
   HELLO: 0,
   STATE: 1,
-  JOIN: 2,
+  CONNECT: 2,
   BOOP: 3,
 };
 
@@ -26,7 +26,7 @@ class Socket extends EventEmitter {
   gen() {
     const ws = this.ws = new WebSocket(this.gateway);
     this.ws.onclose = ws.onerror = () => {
-      setTimeout(this.gen.bind(this), 750);
+      setTimeout(this.gen.bind(this), 1500);
     };
     this.attach();
   }

@@ -19,6 +19,13 @@ wss.on('connection', (c) => {
     boops: 0,
     connected: new Set(),
     send: ws.send,
+    update() {
+      ws.send(OPCodes.STATE, {
+        connected: this.connected.site,
+        boops: this.boops,
+        id: this.id,
+      });
+    },
   };
 
   // eslint-disable-next-line no-console
@@ -37,9 +44,10 @@ wss.on('connection', (c) => {
         for (const connected of state.connected)
           connected.send(OPCodes.BOOP, d);
         break;
-      case OPCodes.JOIN: {
+      case OPCodes.CONNECT: {
         const connection = connections.get(d.secret);
         connection.connected.add(state);
+        connection.update();
         c.on('close', () => {
           connection.connected.delete(state);
         });

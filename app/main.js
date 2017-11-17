@@ -63,9 +63,9 @@ function setActivity() {
     smallImageText: 'i am my own pillows',
     partyId: state.id,
     partySize: state.partySize,
-    matchSecret: state.id,
-    joinSecret: state.id,
-    spectateSecret: state.id,
+    matchSecret: state.id ? `m${state.id}` : undefined,
+    joinSecret: state.id ? `j${state.id}` : undefined,
+    spectateSecret: state.id ? `s${state.id}` : undefined,
     instance: true,
   });
 }
@@ -74,10 +74,12 @@ rpc.on('ready', () => {
   setActivity();
 
   rpc.subscribe('ACTIVITY_JOIN', ({ secret }) => {
+    secret = secret.slice(1);
     mainWindow.webContents.send('ACTIVITY', { type: 'JOIN', secret });
   });
 
   rpc.subscribe('ACTIVITY_SPECTATE', ({ secret }) => {
+    secret = secret.slice(1);
     mainWindow.webContents.send('ACTIVITY', { type: 'SPECTATE', secret });
   });
 

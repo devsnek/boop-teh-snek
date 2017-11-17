@@ -8,12 +8,11 @@ const counter = document.getElementById('boops');
 const state = {
   boops: 0,
   id: undefined,
-  sharing: false,
-  joined: false,
+  connected: 0,
 };
 
 // eslint-disable-next-line no-console
-const log = (...args) => console.log(state.id, ...args);
+const log = (...args) => console.log(...args);
 
 const ws = new Socket('ws://localhost:1337');
 ws.on('message', ({ op, d }) => {
@@ -22,6 +21,10 @@ ws.on('message', ({ op, d }) => {
     case OPCodes.HELLO:
       state.id = d.id;
       break;
+    case OPCodes.STATE:
+      Object.assign(state, d);
+      update();
+      break;
     case OPCodes.BOOP:
       boop(d);
   }
@@ -29,13 +32,13 @@ ws.on('message', ({ op, d }) => {
 
 function update() {
   ipc.send('STATE', state);
-  if (!this.joined)
+  if (state.connected > 0)
     ws.send(OPCodes.BOOP, state.boops);
 }
 
 ipc.on('ACTIVITY', (d) => {
-  ws.send(OPCodes.JOIN, d.id);
-  this.joined = true;
+  log('ACTIVITY', d);
+  ws.send(OPCodes.CONNECT, d.id);
 });
 
 function boop(boops) {
