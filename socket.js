@@ -33,7 +33,9 @@ class Socket extends EventEmitter {
 
   attach() {
     this.ws.onmessage = ({ data }) => {
-      this.emit('message', JSON.parse(data));
+      try {
+        this.emit('message', JSON.parse(data));
+      } catch (err) {} // eslint-disable-line no-empty
     };
   }
 }
