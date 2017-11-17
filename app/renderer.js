@@ -36,9 +36,8 @@ function update() {
     ws.send(OPCodes.BOOP, state.boops);
 }
 
-ipc.on('ACTIVITY', (d) => {
-  log('ACTIVITY', d);
-  // ws.send(OPCodes.CONNECT, d.id);
+ipc.on('ACTIVITY', (evt, d) => {
+  ws.send(OPCodes.CONNECT, d);
 });
 
 function boop(boops) {

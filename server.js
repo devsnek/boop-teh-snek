@@ -37,6 +37,7 @@ wss.on('connection', (c) => {
   });
 
   ws.on('message', ({ op, d }) => {
+    log(op, d);
     switch (op) {
       case OPCodes.BOOP:
         log('BOOP', d);
@@ -45,6 +46,8 @@ wss.on('connection', (c) => {
           connected.send(OPCodes.BOOP, d);
         break;
       case OPCodes.CONNECT: {
+        if (!d.secret)
+          break;
         const connection = connections.get(d.secret);
         connection.connected.add(state);
         connection.update();
