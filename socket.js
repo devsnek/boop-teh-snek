@@ -1,4 +1,11 @@
 const EventEmitter = require('events');
+const WebSocket = (() => {
+  try {
+    return window.WebSocket;
+  } catch (err) {
+    return require('ws');
+  }
+})();
 
 const OPCodes = {
   HELLO: 0,
@@ -6,6 +13,7 @@ const OPCodes = {
   UNSUBSCRIBE: 2,
   EVENT: 3,
   PUBLISH: 4,
+  DISCONNECT: 5,
 };
 
 class Socket extends EventEmitter {
@@ -21,6 +29,9 @@ class Socket extends EventEmitter {
   }
 
   send(op, d) {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN)
+      return;
+
     this.ws.send(JSON.stringify({ op, d }));
   }
 

@@ -13,7 +13,11 @@ const state = window.state = {
 };
 
 const c = remote.getGlobal('console');
-const log = (...args) => c.log(...args);
+const log = (...args) => {
+  // eslint-disable-next-line no-console
+  console.log(...args);
+  c.log(...args);
+};
 
 const ws = new Socket('wss://boop.gc.gy');
 ws.on('message', ({ op, d }) => {
@@ -23,6 +27,11 @@ ws.on('message', ({ op, d }) => {
       state.id = d.id;
       break;
     case OPCodes.EVENT:
+      if (d.boops)
+        boop(d.boops);
+      break;
+    case OPCodes.DISCONNECT:
+      state.readonly = false;
       break;
   }
 });

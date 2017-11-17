@@ -17,21 +17,21 @@ const pubsub = {
     if (!stream)
       return;
     for (const sub of stream)
-      sub(data);
+      sub.send(data);
   },
-  subscribe(channel, send) {
+  subscribe(channel, sub) {
     console.log('SUB', channel);
     if (!this.streams.has(channel))
       this.streams.set(channel, new Set());
 
-    this.streams.get(channel).add(send);
+    this.streams.get(channel).add(sub);
   },
-  unsubscribe(channel, send) {
+  unsubscribe(channel, sub) {
     console.log('UNSUB', channel);
     if (!this.streams.has(channel))
       return;
 
-    this.streams.get(channel).delete(send);
+    this.streams.get(channel).delete(sub);
   },
 };
 
@@ -44,6 +44,8 @@ wss.on('connection', (c) => {
   const log = (...args) => console.log(id, ...args);
 
   const pubsend = (d) => ws.send(OPCodes.EVENT, d);
+  const finish = () => ws.send(OPCodes.DISCONNECT);
+  const pubinfo = { send: pubsend, finish };
 
   log('CONNECT');
 
@@ -51,10 +53,10 @@ wss.on('connection', (c) => {
     log(op, d);
     switch (op) {
       case OPCodes.SUBSCRIBE:
-        pubsub.subscribe(d, pubsend);
+        pubsub.subscribe(d, pubinfo);
         break;
       case OPCodes.UNSUBSCRIBE:
-        pubsub.unsubscribe(d, pubsend);
+        pubsub.unsubscribe(d, pubinfo);
         break;
       case OPCodes.PUBLISH:
         pubsub.publish(id, d);
