@@ -20,6 +20,7 @@ wss.on('connection', (c) => {
     connected: new Set(),
     send: ws.send,
     update() {
+      log('UPDATING');
       ws.send(OPCodes.STATE, {
         connected: this.connected.site,
         boops: this.boops,
