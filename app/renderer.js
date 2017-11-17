@@ -5,7 +5,7 @@ webFrame.setZoomLevelLimits(1, 1);
 const snek = document.getElementById('snek');
 const counter = document.getElementById('boops');
 
-const state = {
+const state = window.state = {
   boops: 0,
   id: undefined,
   connected: 0,
@@ -38,13 +38,13 @@ function update() {
 
 ipc.on('ACTIVITY', (d) => {
   log('ACTIVITY', d);
-  ws.send(OPCodes.CONNECT, d.id);
+  // ws.send(OPCodes.CONNECT, d.id);
 });
 
 function boop(boops) {
   if (boops)
     state.boops = boops;
-  else if (!this.joined)
+  else
     state.boops++;
   counter.innerHTML = `${state.boops} BOOPS`;
   update();

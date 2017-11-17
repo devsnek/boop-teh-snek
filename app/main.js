@@ -45,24 +45,22 @@ app.setAsDefaultProtocolClient(`discord-${ClientId}`, path.join(__dirname, 'laun
 const rpc = new DiscordRPC.Client({ transport: 'ipc' });
 const startTimestamp = new Date();
 
-const state = {
-  boops: 0,
-};
-
-function setActivity() {
+async function setActivity() {
   if (!rpc)
     return;
 
+  const state = await mainWindow.webContents.executeJavaScript('window.state');
+
   rpc.setActivity({
     details: `booped ${state.boops} times`,
-    state: `booping ${state.partySize ? 'with friends' : 'alone'}`,
+    state: `booping ${state.connected ? 'with friends' : 'alone'}`,
     startTimestamp,
     largeImageKey: 'snek_large',
     largeImageText: 'tea is delicious',
     smallImageKey: 'snek_small',
     smallImageText: 'i am my own pillows',
     partyId: state.id,
-    partySize: state.partySize,
+    partySize: state.connections,
     matchSecret: state.id ? `m${state.id}` : undefined,
     joinSecret: state.id ? `j${state.id}` : undefined,
     spectateSecret: state.id ? `s${state.id}` : undefined,
@@ -74,18 +72,22 @@ rpc.on('ready', () => {
   setActivity();
 
   rpc.subscribe('ACTIVITY_JOIN', ({ secret }) => {
-    secret = secret.slice(1);
-    mainWindow.webContents.send('ACTIVITY', { type: 'JOIN', secret });
+    mainWindow.webContents.send('ACTIVITY', {
+      type: 'JOIN',
+      secret: secret.slice(1),
+    });
   });
 
   rpc.subscribe('ACTIVITY_SPECTATE', ({ secret }) => {
-    secret = secret.slice(1);
-    mainWindow.webContents.send('ACTIVITY', { type: 'SPECTATE', secret });
+    mainWindow.webContents.send('ACTIVITY', {
+      type: 'SPECTATE',
+      secret: secret.slice(1),
+    });
   });
 
-  // rpc.subscribe('ACTIVITY_JOIN_REQUEST', ({ user }) => {
-  //   mainWindow.webContents.send('ACTIVITY', { type: 'REQUEST', user });
-  // });
+  rpc.subscribe('ACTIVITY_JOIN_REQUEST', ({ user }) => {
+    mainWindow.webContents.send('ACTIVITY', { type: 'REQUEST', user });
+  });
 
   // activity can only be set every 15 seconds
   setInterval(() => {
@@ -94,7 +96,3 @@ rpc.on('ready', () => {
 });
 
 rpc.login(ClientId).catch(console.error);
-
-ipc.on('STATE', (evt, s) => {
-  Object.assign(state, s);
-});
