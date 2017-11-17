@@ -1,4 +1,4 @@
-const { ipcRenderer: ipc, webFrame } = require('electron');
+const { ipcRenderer: ipc, webFrame, remote } = require('electron');
 const { Socket, OPCodes } = require('../socket');
 webFrame.setZoomLevelLimits(1, 1);
 
@@ -12,8 +12,8 @@ const state = window.state = {
   readonly: false,
 };
 
-// eslint-disable-next-line no-console
-const log = (...args) => console.log(...args);
+const c = remote.getGlobal('console');
+const log = (...args) => c.log(...args);
 
 const ws = new Socket('wss://boop.gc.gy');
 ws.on('message', ({ op, d }) => {

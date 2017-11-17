@@ -22,7 +22,7 @@ const pubsub = {
   subscribe(channel, send) {
     console.log('SUB', channel);
     if (!this.streams.has(channel))
-      this.streams.set(channel, new WeakSet());
+      this.streams.set(channel, new Set());
 
     this.streams.get(channel).add(send);
   },
