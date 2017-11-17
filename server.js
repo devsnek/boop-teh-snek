@@ -12,6 +12,7 @@ const wss = new WebSocket.Server({ server });
 const pubsub = {
   streams: new Map(),
   publish(channel, data) {
+    console.log('PUB', channel, data);
     const stream = this.streams.get(channel);
     if (!stream)
       return;
@@ -19,12 +20,14 @@ const pubsub = {
       sub(data);
   },
   subscribe(channel, send) {
+    console.log('SUB', channel);
     if (!this.streams.has(channel))
       this.streams.set(channel, new WeakSet());
 
     this.streams.get(channel).add(send);
   },
   unsubscribe(channel, send) {
+    console.log('UNSUB', channel);
     if (!this.streams.has(channel))
       return;
 
@@ -36,6 +39,8 @@ wss.on('connection', (c) => {
   const ws = new Socket(c);
 
   const id = uuid();
+
+  log('CONNECT');
 
   // eslint-disable-next-line no-console
   const log = (...args) => console.log(id, ...args);
