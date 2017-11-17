@@ -5,6 +5,7 @@ const OPCodes = {
   SUBSCRIBE: 1,
   UNSUBSCRIBE: 2,
   EVENT: 3,
+  PUBLISH: 4,
 };
 
 class Socket extends EventEmitter {
