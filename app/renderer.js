@@ -10,6 +10,7 @@ const state = window.state = {
   id: undefined,
   connected: 0,
   readonly: false,
+  party: undefined,
 };
 
 const c = remote.getGlobal('console');
@@ -32,6 +33,7 @@ ws.on('message', ({ op, d }) => {
       break;
     case OPCodes.DISCONNECT:
       state.readonly = false;
+      state.party = undefined;
       break;
   }
 });
@@ -41,6 +43,7 @@ ipc.on('ACTIVITY', (evt, d) => {
     return;
 
   ws.send(OPCodes.SUBSCRIBE, d.secret);
+  state.party = d.secret;
   if (d.type === 'SPECTATE')
     state.readonly = true;
 });

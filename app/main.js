@@ -53,17 +53,17 @@ async function setActivity() {
 
   rpc.setActivity({
     details: `booped ${state.boops} times`,
-    state: `booping ${state.connected ? 'with friends' : 'alone'}`,
+    state: `booping ${state.party ? `with ${state.connected} friends` : 'alone'}`,
     startTimestamp,
     largeImageKey: 'snek_large',
     largeImageText: 'tea is delicious',
     smallImageKey: 'snek_small',
     smallImageText: 'i am my own pillows',
-    partyId: state.id,
+    partyId: state.party || state.id,
     partySize: state.connections,
-    matchSecret: state.id ? `m${state.id}` : undefined,
-    joinSecret: state.id ? `j${state.id}` : undefined,
-    spectateSecret: state.id ? `s${state.id}` : undefined,
+    matchSecret: !state.party && state.id ? `m${state.id}` : undefined,
+    joinSecret: !state.party && state.id ? `j${state.id}` : undefined,
+    spectateSecret: !state.party && state.id ? `s${state.id}` : undefined,
     instance: true,
   });
 }
