@@ -27,6 +27,7 @@ ws.on('message', ({ op, d }) => {
       break;
     case OPCodes.BOOP:
       boop(d);
+      break;
   }
 });
 

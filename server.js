@@ -18,7 +18,7 @@ wss.on('connection', (c) => {
     id: uuid(),
     boops: 0,
     connected: new Set(),
-    send: ws.send,
+    send: ws.send.bind(ws),
     update() {
       log('UPDATING');
       ws.send(OPCodes.STATE, {
