@@ -14,7 +14,7 @@ const state = window.state = {
 // eslint-disable-next-line no-console
 const log = (...args) => console.log(...args);
 
-const ws = new Socket('ws://localhost:1337');
+const ws = new Socket('wss://boop.gc.gy');
 ws.on('message', ({ op, d }) => {
   log(op, d);
   switch (op) {
