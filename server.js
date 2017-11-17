@@ -40,12 +40,12 @@ wss.on('connection', (c) => {
 
   const id = uuid();
 
-  log('CONNECT');
-
   // eslint-disable-next-line no-console
   const log = (...args) => console.log(id, ...args);
 
   const pubsend = (d) => ws.send(OPCodes.EVENT, d);
+
+  log('CONNECT');
 
   ws.on('message', ({ op, d }) => {
     log(op, d);
