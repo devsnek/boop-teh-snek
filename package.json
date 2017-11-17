@@ -1,0 +1,28 @@
+{
+  "name": "boop-teh-snek",
+  "version": "1.0.0",
+  "description": "To run this example simply run `npm run example`",
+  "main": "main.js",
+  "scripts": {
+    "app": "electron app/main.js",
+    "server": "node server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devsnek/boop-teh-snek.git"
+  },
+  "author": "snek <me@gus.host>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/devsnek/boop-teh-snek/issues"
+  },
+  "homepage": "https://github.com/devsnek/boop-teh-snek#readme",
+  "devDependencies": {
+    "electron": "^1.7.9"
+  },
+  "dependencies": {
+    "discord-rpc": "github:devsnek/discord-rpc",
+    "uuid": "^3.1.0",
+    "ws": "^3.3.1"
+  }
+}
