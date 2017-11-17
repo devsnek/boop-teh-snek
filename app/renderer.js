@@ -1,24 +1,50 @@
 const { ipcRenderer: ipc, webFrame } = require('electron');
-const socket = require('../socket');
-const snek = document.getElementById('snek');
-const counter = document.getElementById('boops');
+const { Socket, OPCodes } = require('../socket');
 webFrame.setZoomLevelLimits(1, 1);
 
-let boops = 0;
+const snek = document.getElementById('snek');
+const counter = document.getElementById('boops');
 
-const ws = socket(({ id }) => {
-  ipc.send('HELLO', { id });
+const state = {
+  boops: 0,
+  id: undefined,
+  sharing: false,
+  joined: false,
+};
+
+// eslint-disable-next-line no-console
+const log = (...args) => console.log(state.id, ...args);
+
+const ws = new Socket('ws://localhost:1337');
+ws.on('message', ({ op, d }) => {
+  log(op, d);
+  switch (op) {
+    case OPCodes.HELLO:
+      state.id = d.id;
+      break;
+    case OPCodes.BOOP:
+      boop(d);
+  }
 });
 
-ipc.on('ACTIVITY', (...args) => {
-  console.log(args);
+function update() {
+  ipc.send('STATE', state);
+  if (!this.joined)
+    ws.send(OPCodes.BOOP, state.boops);
+}
+
+ipc.on('ACTIVITY', (d) => {
+  ws.send(OPCodes.JOIN, d.id);
+  this.joined = true;
 });
 
-function boop() {
-  boops++;
-  counter.innerHTML = `${boops} BOOPS`;
-  ipc.send('BOOP', { boops });
-  ws.boop(boops);
+function boop(boops) {
+  if (boops)
+    state.boops = boops;
+  else if (!this.joined)
+    state.boops++;
+  counter.innerHTML = `${state.boops} BOOPS`;
+  update();
 }
 
 snek.onmousedown = () => {

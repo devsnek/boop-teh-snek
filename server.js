@@ -1,8 +1,7 @@
 const http = require('http');
 const WebSocket = require('ws');
-const socket = require('./socket');
-
-const production = process.env.NODE_ENV === 'production';
+const uuid = require('uuid/v4');
+const { Socket, OPCodes } = require('./socket');
 
 const server = http.createServer((req, res) => {
   res.end('boop teh snek');
@@ -10,8 +9,46 @@ const server = http.createServer((req, res) => {
 
 const wss = new WebSocket.Server({ server });
 
+const connections = new Map();
+
 wss.on('connection', (c) => {
-  socket(c, true);
+  const ws = new Socket(c);
+
+  const state = {
+    id: uuid(),
+    boops: 0,
+    connected: new Set(),
+    send: ws.send,
+  };
+
+  // eslint-disable-next-line no-console
+  const log = (...args) => console.log(state.id, ...args);
+
+  connections.set(state.id, state);
+  c.on('close', () => {
+    connections.delete(state.id);
+  });
+
+  ws.on('message', ({ op, d }) => {
+    switch (op) {
+      case OPCodes.BOOP:
+        log('BOOP', d);
+        state.boops = d;
+        for (const connected of state.connected)
+          connected.send(OPCodes.BOOP, d);
+        break;
+      case OPCodes.JOIN: {
+        const connection = connections.get(d.secret);
+        connection.connected.add(state);
+        c.on('close', () => {
+          connection.connected.delete(state);
+        });
+        break;
+      }
+    }
+  });
+
+  ws.send(OPCodes.HELLO, { id: state.id });
 });
 
-server.listen(production ? '/tmp/boop_teh_snek.sock' : 1337);
+server.listen(1337);

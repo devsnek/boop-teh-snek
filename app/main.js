@@ -43,28 +43,29 @@ app.on('activate', () => {
 app.setAsDefaultProtocolClient(`discord-${ClientId}`, path.join(__dirname, 'launch.sh'));
 
 const rpc = new DiscordRPC.Client({ transport: 'ipc' });
-let boops = 0;
-let wsId = undefined;
-let partySize = undefined;
 const startTimestamp = new Date();
+
+const state = {
+  boops: 0,
+};
 
 function setActivity() {
   if (!rpc)
     return;
 
   rpc.setActivity({
-    details: `booped ${boops} times`,
-    state: `booping ${partySize ? 'with friends' : 'alone'}`,
+    details: `booped ${state.boops} times`,
+    state: `booping ${state.partySize ? 'with friends' : 'alone'}`,
     startTimestamp,
     largeImageKey: 'snek_large',
     largeImageText: 'tea is delicious',
     smallImageKey: 'snek_small',
     smallImageText: 'i am my own pillows',
-    partyId: wsId,
-    partySize: partySize,
-    matchSecret: wsId && `M${wsId}`,
-    joinSecret: wsId && `J${wsId}`,
-    spectateSecret: wsId && `S${wsId}`,
+    partyId: state.id,
+    partySize: state.partySize,
+    matchSecret: state.id,
+    joinSecret: state.id,
+    spectateSecret: state.id,
     instance: true,
   });
 }
@@ -72,17 +73,17 @@ function setActivity() {
 rpc.on('ready', () => {
   setActivity();
 
-  rpc.subscribe('ACTIVITY_JOIN', (request) => {
-    mainWindow.webContents.send('ACTIVITY', { type: 'JOIN', request });
+  rpc.subscribe('ACTIVITY_JOIN', ({ secret }) => {
+    mainWindow.webContents.send('ACTIVITY', { type: 'JOIN', secret });
   });
 
-  rpc.subscribe('ACTIVITY_SPECTATE', (request) => {
-    mainWindow.webContents.send('ACTIVITY', { type: 'SPECTATE', request });
+  rpc.subscribe('ACTIVITY_SPECTATE', ({ secret }) => {
+    mainWindow.webContents.send('ACTIVITY', { type: 'SPECTATE', secret });
   });
 
-  rpc.subscribe('ACTIVITY_JOIN_REQUEST', (request) => {
-    mainWindow.webContents.send('ACTIVITY', { type: 'REQUEST', request });
-  });
+  // rpc.subscribe('ACTIVITY_JOIN_REQUEST', ({ user }) => {
+  //   mainWindow.webContents.send('ACTIVITY', { type: 'REQUEST', user });
+  // });
 
   // activity can only be set every 15 seconds
   setInterval(() => {
@@ -92,10 +93,6 @@ rpc.on('ready', () => {
 
 rpc.login(ClientId).catch(console.error);
 
-ipc.on('HELLO', (evt, { id }) => {
-  wsId = id;
-});
-
-ipc.on('BOOP', (evt, { boops: b }) => {
-  boops = b;
+ipc.on('STATE', (evt, s) => {
+  Object.assign(state, s);
 });
