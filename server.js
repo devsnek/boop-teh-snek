@@ -1,6 +1,6 @@
 const http = require('http');
 const WebSocket = require('ws');
-const socket = require('../socket');
+const socket = require('./socket');
 
 const production = process.env.NODE_ENV === 'production';
 
