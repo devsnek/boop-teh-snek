@@ -9,57 +9,55 @@ const server = http.createServer((req, res) => {
 
 const wss = new WebSocket.Server({ server });
 
-const connections = new Map();
+const pubsub = {
+  streams: new Map(),
+  publish(channel, data) {
+    const stream = this.streams.get(channel);
+    if (!stream)
+      return;
+    for (const sub of stream)
+      sub(data);
+  },
+  subscribe(channel, send) {
+    if (!this.streams.has(channel))
+      this.streams.set(channel, new WeakSet());
+
+    this.streams.get(channel).add(send);
+  },
+  unsubscribe(channel, send) {
+    if (!this.streams.has(channel))
+      return;
+
+    this.streams.get(channel).delete(send);
+  },
+};
 
 wss.on('connection', (c) => {
   const ws = new Socket(c);
 
-  const state = {
-    id: uuid(),
-    boops: 0,
-    connected: new Set(),
-    send: ws.send.bind(ws),
-    update() {
-      log('UPDATING');
-      ws.send(OPCodes.STATE, {
-        connected: this.connected.site,
-        boops: this.boops,
-        id: this.id,
-      });
-    },
-  };
+  const id = uuid();
 
   // eslint-disable-next-line no-console
-  const log = (...args) => console.log(state.id, ...args);
+  const log = (...args) => console.log(id, ...args);
 
-  connections.set(state.id, state);
-  c.on('close', () => {
-    connections.delete(state.id);
-  });
+  const pubsend = (d) => ws.send(OPCodes.EVENT, d);
 
   ws.on('message', ({ op, d }) => {
     log(op, d);
     switch (op) {
-      case OPCodes.BOOP:
-        state.boops = d;
-        for (const connected of state.connected)
-          connected.send(OPCodes.BOOP, d);
+      case OPCodes.SUBSCRIBE:
+        pubsub.subscribe(d.id, pubsend);
         break;
-      case OPCodes.CONNECT: {
-        if (!d.secret)
-          break;
-        const connection = connections.get(d.secret);
-        connection.connected.add(state);
-        connection.update();
-        c.on('close', () => {
-          connection.connected.delete(state);
-        });
+      case OPCodes.UNSUBSCRIBE:
+        pubsub.unsubscribe(d.id, pubsend);
         break;
-      }
+      case OPCodes.PUBLISH:
+        pubsub.publish(id, d);
+        break;
     }
   });
 
-  ws.send(OPCodes.HELLO, { id: state.id });
+  ws.send(OPCodes.HELLO, { id });
 });
 
 server.listen(1337);

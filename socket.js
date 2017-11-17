@@ -2,9 +2,9 @@ const EventEmitter = require('events');
 
 const OPCodes = {
   HELLO: 0,
-  STATE: 1,
-  CONNECT: 2,
-  BOOP: 3,
+  SUBSCRIBE: 1,
+  UNSUBSCRIBE: 2,
+  EVENT: 3,
 };
 
 class Socket extends EventEmitter {

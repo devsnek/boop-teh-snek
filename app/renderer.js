@@ -9,6 +9,7 @@ const state = window.state = {
   boops: 0,
   id: undefined,
   connected: 0,
+  readonly: false,
 };
 
 // eslint-disable-next-line no-console
@@ -21,22 +22,18 @@ ws.on('message', ({ op, d }) => {
     case OPCodes.HELLO:
       state.id = d.id;
       break;
-    case OPCodes.STATE:
-      Object.assign(state, d);
-      update();
-      break;
-    case OPCodes.BOOP:
-      boop(d);
+    case OPCodes.EVENT:
       break;
   }
 });
 
-function update() {
-  ws.send(OPCodes.BOOP, state.boops);
-}
-
 ipc.on('ACTIVITY', (evt, d) => {
-  ws.send(OPCodes.CONNECT, d);
+  if (!d.secret)
+    return;
+
+  ws.send(OPCodes.SUBSCRIBE, d.secret);
+  if (d.type === 'SPECTATE')
+    state.readonly = true;
 });
 
 function boop(boops) {
@@ -45,14 +42,18 @@ function boop(boops) {
   else
     state.boops++;
   counter.innerHTML = `${state.boops} BOOPS`;
-  update();
+  ws.send(OPCodes.PUBLISH, { boops: state.boops });
 }
 
 snek.onmousedown = () => {
+  if (state.readonly)
+    return;
   snek.style['font-size'] = '550%';
   boop();
 };
 
 snek.onmouseup = () => {
+  if (state.readonly)
+    return;
   snek.style['font-size'] = '500%';
 };
