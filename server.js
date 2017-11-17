@@ -41,7 +41,6 @@ wss.on('connection', (c) => {
     log(op, d);
     switch (op) {
       case OPCodes.BOOP:
-        log('BOOP', d);
         state.boops = d;
         for (const connected of state.connected)
           connected.send(OPCodes.BOOP, d);

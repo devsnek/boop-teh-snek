@@ -31,9 +31,7 @@ ws.on('message', ({ op, d }) => {
 });
 
 function update() {
-  ipc.send('STATE', state);
-  if (state.connected > 0)
-    ws.send(OPCodes.BOOP, state.boops);
+  ws.send(OPCodes.BOOP, state.boops);
 }
 
 ipc.on('ACTIVITY', (evt, d) => {
