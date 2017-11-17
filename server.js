@@ -51,10 +51,10 @@ wss.on('connection', (c) => {
     log(op, d);
     switch (op) {
       case OPCodes.SUBSCRIBE:
-        pubsub.subscribe(d.id, pubsend);
+        pubsub.subscribe(d, pubsend);
         break;
       case OPCodes.UNSUBSCRIBE:
-        pubsub.unsubscribe(d.id, pubsend);
+        pubsub.unsubscribe(d, pubsend);
         break;
       case OPCodes.PUBLISH:
         pubsub.publish(id, d);
