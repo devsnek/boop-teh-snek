@@ -1,5 +1,5 @@
 const { ipcRenderer: ipc, webFrame, remote } = require('electron');
-const { Socket, OPCodes } = require('../socket');
+const { Socket, OPCodes } = require('./socket');
 webFrame.setZoomLevelLimits(1, 1);
 
 const snek = document.getElementById('snek');

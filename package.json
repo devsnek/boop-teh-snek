@@ -4,8 +4,12 @@
   "description": "To run this example simply run `npm run example`",
   "main": "main.js",
   "scripts": {
-    "app": "electron app/main.js",
-    "server": "node server"
+    "app": "electron main.js",
+    "server": "node server",
+    "build": "node build.js all",
+    "build:mac": "node build.js mac",
+    "build:win": "node build.js win",
+    "build:linux": "node build.js linux"
   },
   "repository": {
     "type": "git",
@@ -18,7 +22,8 @@
   },
   "homepage": "https://github.com/devsnek/boop-teh-snek#readme",
   "devDependencies": {
-    "electron": "^1.7.9"
+    "electron": "^1.7.9",
+    "electron-packager": "^10.1.0"
   },
   "dependencies": {
     "discord-rpc": "github:devsnek/discord-rpc",

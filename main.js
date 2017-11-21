@@ -5,8 +5,11 @@ const path = require('path');
 const url = require('url');
 const DiscordRPC = require('discord-rpc');
 
-// don't change the client id if you want this example to work
+process.on('unhandledRejection', console.error);
+
 const ClientId = '180984871685062656';
+
+app.setAsDefaultProtocolClient(`discord-${ClientId}`);
 
 let mainWindow;
 
@@ -40,8 +43,6 @@ app.on('activate', () => {
     createWindow();
 });
 
-app.setAsDefaultProtocolClient(`discord-${ClientId}`);
-
 const rpc = new DiscordRPC.Client({ transport: 'ipc' });
 const startTimestamp = new Date();
 
@@ -50,6 +51,9 @@ async function setActivity() {
     return;
 
   const state = await mainWindow.webContents.executeJavaScript('window.state');
+
+  if (!state)
+    return;
 
   rpc.setActivity({
     details: `booped ${state.boops} times`,
@@ -61,9 +65,9 @@ async function setActivity() {
     smallImageText: 'i am my own pillows',
     partyId: state.party || state.id,
     partySize: state.connections,
-    matchSecret: !state.party && state.id ? `m${state.id}` : undefined,
-    joinSecret: !state.party && state.id ? `j${state.id}` : undefined,
-    spectateSecret: !state.party && state.id ? `s${state.id}` : undefined,
+    matchSecret: state.id ? `m${state.id}` : undefined,
+    joinSecret: state.id ? `j${state.id}` : undefined,
+    spectateSecret: state.id ? `s${state.id}` : undefined,
     instance: true,
   });
 }
