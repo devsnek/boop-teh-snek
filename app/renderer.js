@@ -27,7 +27,7 @@ ws.on('message', ({ op, d }) => {
     case OPCodes.HELLO:
       state.id = d.id;
       break;
-    case OPCodes.EVENT:
+    case OPCodes.PUBLISH:
       if (d.boops)
         boop(d.boops);
       break;
@@ -39,14 +39,17 @@ ws.on('message', ({ op, d }) => {
 });
 
 ipc.on('ACTIVITY', (evt, d) => {
-  if (!d.secret)
-    return;
-
-  ws.send(OPCodes.SUBSCRIBE, d.secret);
-  state.party = d.secret;
-  if (d.type === 'SPECTATE')
-    state.readonly = true;
+  if (d.type === 'REQUEST') {
+    // show modal
+    ipc.send('REQUEST_REPLY', { type: 'ACCEPT' });
+  } else {
+    ws.send(OPCodes.SUBSCRIBE, d.secret);
+    state.party = d.secret;
+    if (d.type === 'SPECTATE')
+      state.readonly = true;
+  }
 });
+
 
 function boop(boops) {
   if (boops)
@@ -55,6 +58,8 @@ function boop(boops) {
     state.boops++;
   counter.innerHTML = `${state.boops} BOOPS`;
   ws.send(OPCodes.PUBLISH, { boops: state.boops });
+  if (state.party)
+    ws.send(OPCodes.BROADCAST, { target: state.party, boop: state.boops });
 }
 
 snek.onmousedown = () => {

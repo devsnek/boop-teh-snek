@@ -40,7 +40,7 @@ app.on('activate', () => {
     createWindow();
 });
 
-app.setAsDefaultProtocolClient(`discord-${ClientId}`, path.join(__dirname, 'launch.sh'));
+app.setAsDefaultProtocolClient(`discord-${ClientId}`);
 
 const rpc = new DiscordRPC.Client({ transport: 'ipc' });
 const startTimestamp = new Date();
@@ -69,8 +69,6 @@ async function setActivity() {
 }
 
 rpc.on('ready', () => {
-  setActivity();
-
   rpc.subscribe('ACTIVITY_JOIN', ({ secret }) => {
     mainWindow.webContents.send('ACTIVITY', {
       type: 'JOIN',
@@ -89,10 +87,22 @@ rpc.on('ready', () => {
     mainWindow.webContents.send('ACTIVITY', { type: 'REQUEST', user });
   });
 
-  // activity can only be set every 15 seconds
+  setActivity();
+
   setInterval(() => {
     setActivity();
   }, 15e3);
+});
+
+ipc.on('REQUEST_REPLY', (evt, data) => {
+  switch (data.type) {
+    case 'ACCEPT':
+      rpc.sendJoinInvite(data.user);
+      break;
+    default:
+      rpc.closeJoinRequest(data.user);
+      break;
+  }
 });
 
 rpc.login(ClientId).catch(console.error);

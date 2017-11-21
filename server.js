@@ -35,6 +35,8 @@ const pubsub = {
   },
 };
 
+const connections = new Map();
+
 wss.on('connection', (c) => {
   const ws = new Socket(c);
 
@@ -43,11 +45,17 @@ wss.on('connection', (c) => {
   // eslint-disable-next-line no-console
   const log = (...args) => console.log(id, ...args);
 
-  const pubsend = (d) => ws.send(OPCodes.EVENT, d);
+  const pubsend = (d) => ws.send(OPCodes.PUBLISH, d);
   const finish = () => ws.send(OPCodes.DISCONNECT);
   const pubinfo = { send: pubsend, finish };
 
+  connections.set(id, pubinfo);
+
   log('CONNECT');
+
+  ws.on('close', () => {
+    connections.delete(id);
+  });
 
   ws.on('message', ({ op, d }) => {
     log(op, d);
@@ -61,6 +69,8 @@ wss.on('connection', (c) => {
       case OPCodes.PUBLISH:
         pubsub.publish(id, d);
         break;
+      case OPCodes.BROADCAST:
+        connections.get(d.target).send(d);
     }
   });
 
