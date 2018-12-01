@@ -1,3 +1,5 @@
+'use strict';
+
 /* eslint-disable no-console */
 
 const { app, BrowserWindow, ipcMain: ipc } = require('electron');
@@ -7,9 +9,7 @@ const DiscordRPC = require('discord-rpc');
 
 process.on('unhandledRejection', console.error);
 
-const ClientId = '180984871685062656';
-
-app.setAsDefaultProtocolClient(`discord-${ClientId}`);
+const clientId = '180984871685062656';
 
 let mainWindow;
 
@@ -39,23 +39,26 @@ app.on('window-all-closed', () => {
 });
 
 app.on('activate', () => {
-  if (mainWindow === null)
+  if (mainWindow === null) {
     createWindow();
+  }
 });
 
 const rpc = new DiscordRPC.Client({ transport: 'ipc' });
 const startTimestamp = new Date();
 
 async function setActivity() {
-  if (!rpc)
-    return;
+  if (!rpc) {
+    return undefined;
+  }
 
   const state = await mainWindow.webContents.executeJavaScript('window.state');
 
-  if (!state)
-    return;
+  if (!state) {
+    return undefined;
+  }
 
-  rpc.setActivity({
+  return rpc.setActivity({
     details: `booped ${state.boops} times`,
     state: `booping ${state.party ? `with ${state.connected} friends` : 'alone'}`,
     startTimestamp,
@@ -91,10 +94,10 @@ rpc.on('ready', () => {
     mainWindow.webContents.send('ACTIVITY', { type: 'REQUEST', user });
   });
 
-  setActivity();
+  setActivity().then(console.log);
 
   setInterval(() => {
-    setActivity();
+    setActivity().then(console.log);
   }, 15e3);
 });
 
@@ -109,4 +112,5 @@ ipc.on('REQUEST_REPLY', (evt, data) => {
   }
 });
 
-rpc.login(ClientId).catch(console.error);
+DiscordRPC.register(clientId);
+rpc.login({ clientId }).catch(console.error);

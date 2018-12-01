@@ -1,3 +1,5 @@
+'use strict';
+
 const http = require('http');
 const WebSocket = require('ws');
 const uuid = require('uuid/v4');
@@ -14,22 +16,26 @@ const pubsub = {
   publish(channel, data) {
     console.log('PUB', channel, data);
     const stream = this.streams.get(channel);
-    if (!stream)
+    if (!stream) {
       return;
-    for (const sub of stream)
+    }
+    for (const sub of stream) {
       sub.send(data);
+    }
   },
   subscribe(channel, sub) {
     console.log('SUB', channel);
-    if (!this.streams.has(channel))
+    if (!this.streams.has(channel)) {
       this.streams.set(channel, new Set());
+    }
 
     this.streams.get(channel).add(sub);
   },
   unsubscribe(channel, sub) {
     console.log('UNSUB', channel);
-    if (!this.streams.has(channel))
+    if (!this.streams.has(channel)) {
       return;
+    }
 
     this.streams.get(channel).delete(sub);
   },
@@ -71,6 +77,8 @@ wss.on('connection', (c) => {
         break;
       case OPCodes.BROADCAST:
         connections.get(d.target).send(d);
+      default:
+        break;
     }
   });
 

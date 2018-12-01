@@ -1,5 +1,10 @@
+'use strict';
+
+/* eslint-env browser */
+
 const { ipcRenderer: ipc, webFrame, remote } = require('electron');
 const { Socket, OPCodes } = require('./socket');
+
 webFrame.setZoomLevelLimits(1, 1);
 
 const snek = document.getElementById('snek');
@@ -20,7 +25,21 @@ const log = (...args) => {
   c.log(...args);
 };
 
-const ws = new Socket('wss://boop.gc.gy');
+const ws = new Socket('ws://localhost:1337');
+
+function boop(boops) {
+  if (boops) {
+    state.boops = boops;
+  } else {
+    state.boops += 1;
+  }
+  counter.innerHTML = `${state.boops} BOOPS`;
+  ws.send(OPCodes.PUBLISH, { boops: state.boops });
+  if (state.party) {
+    ws.send(OPCodes.BROADCAST, { target: state.party, boop: state.boops });
+  }
+}
+
 ws.on('message', ({ op, d }) => {
   log(op, d);
   switch (op) {
@@ -28,12 +47,15 @@ ws.on('message', ({ op, d }) => {
       state.id = d.id;
       break;
     case OPCodes.PUBLISH:
-      if (d.boops)
+      if (d.boops) {
         boop(d.boops);
+      }
       break;
     case OPCodes.DISCONNECT:
       state.readonly = false;
       state.party = undefined;
+      break;
+    default:
       break;
   }
 });
@@ -45,32 +67,23 @@ ipc.on('ACTIVITY', (evt, d) => {
   } else {
     ws.send(OPCodes.SUBSCRIBE, d.secret);
     state.party = d.secret;
-    if (d.type === 'SPECTATE')
+    if (d.type === 'SPECTATE') {
       state.readonly = true;
+    }
   }
 });
 
-
-function boop(boops) {
-  if (boops)
-    state.boops = boops;
-  else
-    state.boops++;
-  counter.innerHTML = `${state.boops} BOOPS`;
-  ws.send(OPCodes.PUBLISH, { boops: state.boops });
-  if (state.party)
-    ws.send(OPCodes.BROADCAST, { target: state.party, boop: state.boops });
-}
-
 snek.onmousedown = () => {
-  if (state.readonly)
+  if (state.readonly) {
     return;
+  }
   snek.style['font-size'] = '550%';
   boop();
 };
 
 snek.onmouseup = () => {
-  if (state.readonly)
+  if (state.readonly) {
     return;
+  }
   snek.style['font-size'] = '500%';
 };

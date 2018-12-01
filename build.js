@@ -1,5 +1,7 @@
 #!/usr/env/bin node
 
+'use strict';
+
 const packager = require('electron-packager');
 
 const matrix = {

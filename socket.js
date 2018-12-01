@@ -1,7 +1,10 @@
+'use strict';
+
 const EventEmitter = require('events');
+
 const WebSocket = (() => {
   try {
-    return window.WebSocket;
+    return window.WebSocket; // eslint-disable-line no-undef
   } catch (err) {
     return require('ws');
   }
@@ -29,8 +32,9 @@ class Socket extends EventEmitter {
   }
 
   send(op, d) {
-    if (!this.ws || this.ws.readyState !== WebSocket.OPEN)
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       return;
+    }
 
     this.ws.send(JSON.stringify({ op, d }));
   }
