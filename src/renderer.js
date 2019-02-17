@@ -4,6 +4,7 @@
 
 const { ipcRenderer: ipc, webFrame, remote } = require('electron');
 const { Socket, OPCodes } = require('./socket');
+const { WS } = require('./constants');
 
 webFrame.setZoomLevelLimits(1, 1);
 
@@ -25,7 +26,7 @@ const log = (...args) => {
   c.log(...args);
 };
 
-const ws = new Socket('ws://localhost:1337');
+const ws = new Socket(WS);
 
 function boop(boops) {
   if (boops) {

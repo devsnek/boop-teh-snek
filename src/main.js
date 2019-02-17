@@ -6,10 +6,7 @@ const { app, BrowserWindow, ipcMain: ipc } = require('electron');
 const path = require('path');
 const url = require('url');
 const DiscordRPC = require('discord-rpc');
-
-process.on('unhandledRejection', console.error);
-
-const clientId = '180984871685062656';
+const { CLIENT_ID } = require('./constants');
 
 let mainWindow;
 
@@ -112,5 +109,5 @@ ipc.on('REQUEST_REPLY', (evt, data) => {
   }
 });
 
-DiscordRPC.register(clientId);
-rpc.login({ clientId }).catch(console.error);
+DiscordRPC.register(CLIENT_ID);
+rpc.login({ clientId: CLIENT_ID }).catch(console.error);
