@@ -25,6 +25,7 @@ const matrix = {
 const config = {
   name: 'BOOP_TEH_SNEK',
   appCopyright: 'Copyright (c) 2018 Gus Caplan',
+  icon: './assets/icon',
   dir: '.',
   asar: true,
   overwrite: true,
